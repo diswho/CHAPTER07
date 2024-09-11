@@ -6,6 +6,7 @@ from tkinter import filedialog
 from . import views as v
 from . import models as m
 from tkinter import messagebox
+from .mainmenu import MainMenu
 
 
 class Application(tk.Tk):
@@ -30,12 +31,21 @@ class Application(tk.Tk):
 
         # Load settings
         self.settings = {
-          'autofill date': tk.BooleanVar(),
-          'autofill sheet data': tk.BoleanVar()
+            'autofill date': tk.BooleanVar(),
+            'autofill sheet data': tk.BooleanVar()
         }
 
         self.title("ABQ Data Entry Application")
         self.columnconfigure(0, weight=1)
+
+        menu = MainMenu(self, self.settings)
+        self.config(menu=menu)
+        event_callbacks = {
+            '<<FileSelect>>': self._on_file_select,
+            '<<FileQuit>>': lambda _: self.quit(),
+        }
+        for sequence, callback in event_callbacks.items():
+            self.bind(sequence, callback)
 
         ttk.Label(
             self,
@@ -43,7 +53,7 @@ class Application(tk.Tk):
             font=("TkDefaultFont", 16)
         ).grid(row=0)
 
-        self.recordform = v.DataRecordForm(self, self.model)
+        self.recordform = v.DataRecordForm(self, self.model, self.settings)
         self.recordform.grid(row=1, padx=10, sticky=(tk.W + tk.E))
         self.recordform.bind('<<SaveRecord>>', self._on_save)
 
